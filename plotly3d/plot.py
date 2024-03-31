@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
+import pandas as pd
 
 def plot_3d(points, colors, s=1, alpha=1, force_continuous=False, title="3D Plot", filename=None):
     # Step 1: Determine Color Type
@@ -14,15 +15,18 @@ def plot_3d(points, colors, s=1, alpha=1, force_continuous=False, title="3D Plot
     
     if is_categorical:
         # Step 3: Categorical Colors Plotting Strategy
-        for color in unique_colors:
-            idx = colors == color
+        # Map categorical color labels to integers
+        color_map, categories = pd.factorize(colors)
+        # Create a trace for each unique color/category
+        for i, color in enumerate(categories):
+            idx = color_map == i
             fig.add_trace(go.Scatter3d(
                 x=points_s[idx, 0],
                 y=points_s[idx, 1],
                 z=points_s[idx, 2],
                 mode='markers',
-                marker=dict(size=s, opacity=alpha, color=color),
-                name=f'{color}'  # Customize for meaningful category names
+                marker=dict(size=s, opacity=alpha, color=i), # Use integer mapping for color
+                name=str(color)  # Use actual category name for legend
             ))
     else:
         # Step 3: Continuous Colors Plotting Strategy
@@ -39,7 +43,6 @@ def plot_3d(points, colors, s=1, alpha=1, force_continuous=False, title="3D Plot
         scene=dict(xaxis_title='X', yaxis_title='Y', zaxis_title='Z'),
         showlegend=True
     )
-    fig.show()
     if filename is not None:
         fig.write_html(filename)
 

@@ -16,7 +16,7 @@ def plot_3d(points, colors, s=1, alpha=1, force_continuous=False, title="3D Plot
     if is_categorical:
         # Step 3: Categorical Colors Plotting Strategy
         # Map categorical color labels to integers
-        color_map, categories = pd.factorize(colors)
+        color_map, categories = pd.factorize(colors, sort=True)
         # Create a trace for each unique color/category
         for i, color in enumerate(categories):
             idx = color_map == i

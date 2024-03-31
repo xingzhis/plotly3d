@@ -42,3 +42,5 @@ def plot_3d(points, colors, s=1, alpha=1, force_continuous=False, title="3D Plot
     fig.show()
     if filename is not None:
         fig.write_html(filename)
+
+    return fig

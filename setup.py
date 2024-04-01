@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="plotly3d",
-    version="0.1.4",
+    version="0.2.0",
     packages=find_packages(),
     install_requires=[
         "plotly",
@@ -10,6 +10,6 @@ setup(
     ],
     author="Xingzhi Sun",
     author_email="xingzhi.sun@yale.edu",
-    description="A minimal helper for ploting 3D scatter plots with plotly",
+    description="A helper for ploting 3D scatter plots with plotly",
     keywords="plotly 3d plotting",
 )

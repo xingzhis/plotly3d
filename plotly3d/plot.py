@@ -2,8 +2,9 @@ import plotly.graph_objects as go
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
 import pandas as pd
+import os
 
-def scatter3d(points, colors=None, scaler=None, **kwargs):
+def scatter(points, colors=None, **kwargs):
     """
     Plots 3D scatter plot with optional rescaling, coloring, and customization.
     
@@ -21,9 +22,21 @@ def scatter3d(points, colors=None, scaler=None, **kwargs):
         - fig (go.Figure): Plotly figure object to which the scatter plot will be added. If None, a new figure is created.
         - xtitle (str), ytitle (str), ztitle (str): Titles for the X, Y, and Z axes.
     """
+    is_3d = points.shape[1] == 3
+    plot_func = go.Scatter3d if is_3d else go.Scatter
+    scaler = kwargs.get('scaler', None)
+    s = kwargs.get('s', 1)
+    alpha = kwargs.get('alpha', 1)
+    title = kwargs.get('title', 'Plot')
+    filename = kwargs.get(None)
+    xtitle = kwargs.get('xtitle', 'X')
+    ytitle = kwargs.get('ytitle', 'Y')
+    ztitle = kwargs.get('ztitle', 'Z')
+    force_continuous = kwargs.get('force_continuous', False)
+    rescale = kwargs.get('rescale', True)
+
     points = np.asarray(points)
     colors = np.asarray(colors) if colors is not None else None
-    rescale = kwargs.get('rescale', True)
     if rescale:
         if scaler is None:
             scaler = MinMaxScaler()
@@ -33,15 +46,6 @@ def scatter3d(points, colors=None, scaler=None, **kwargs):
         points_s = points
 
     fig = kwargs.get('fig', go.Figure())
-
-    s = kwargs.get('s', 1)
-    alpha = kwargs.get('alpha', 1)
-    title = kwargs.get('title', '3D Plot')
-    filename = kwargs.get('filename')
-    xtitle = kwargs.get('xtitle', 'X')
-    ytitle = kwargs.get('ytitle', 'Y')
-    ztitle = kwargs.get('ztitle', 'Z')
-    force_continuous = kwargs.get('force_continuous', False)
 
     if colors is None:
         colors = np.zeros(points.shape[0])
@@ -58,38 +62,64 @@ def scatter3d(points, colors=None, scaler=None, **kwargs):
         # Create a trace for each unique color/category
         for i, color in enumerate(categories):
             idx = color_map == i
-            fig.add_trace(go.Scatter3d(
-                x=points_s[idx, 0],
-                y=points_s[idx, 1],
-                z=points_s[idx, 2],
-                mode='markers',
-                marker=dict(size=s, opacity=alpha, color=i), # Use integer mapping for color
-                name=str(color)  # Use actual category name for legend
-            ))
+            if is_3d:
+                fig.add_trace(plot_func(
+                    x=points_s[idx, 0],
+                    y=points_s[idx, 1],
+                    z=points_s[idx, 2],
+                    mode='markers',
+                    marker=dict(size=s, opacity=alpha, color=i), # Use integer mapping for color
+                    name=str(color)  # Use actual category name for legend
+                ))
+            else:
+                fig.add_trace(plot_func(
+                    x=points_s[idx, 0],
+                    y=points_s[idx, 1],
+                    mode='markers',
+                    marker=dict(size=s, opacity=alpha, color=i), # Use integer mapping for color
+                    name=str(color)  # Use actual category name for legend
+                ))
     else:
         # Step 3: Continuous Colors Plotting Strategy
-        fig.add_trace(go.Scatter3d(
-            x=points_s[:, 0],
-            y=points_s[:, 1],
-            z=points_s[:, 2],
-            mode='markers',
-            marker=dict(size=s, color=colors, colorscale='Viridis', opacity=alpha, colorbar=dict(title='Color Scale')),
-        ))
+        if is_3d:
+            fig.add_trace(plot_func(
+                x=points_s[:, 0],
+                y=points_s[:, 1],
+                z=points_s[:, 2],
+                mode='markers',
+                marker=dict(size=s, color=colors, colorscale='Viridis', opacity=alpha, colorbar=dict(title='Color Scale')),
+            ))
+        else:
+            fig.add_trace(plot_func(
+                x=points_s[:, 0],
+                y=points_s[:, 1],
+                mode='markers',
+                marker=dict(size=s, color=colors, colorscale='Viridis', opacity=alpha, colorbar=dict(title='Color Scale')),
+            ))
 
-    fig.update_layout(
-        title=title,
-        scene=dict(xaxis_title=xtitle, yaxis_title=ytitle, zaxis_title=ztitle),
-        showlegend=True
-    )
+    if is_3d:
+        fig.update_layout(
+            title=title,
+            scene=dict(xaxis_title=xtitle, yaxis_title=ytitle, zaxis_title=ztitle),
+            showlegend=True
+        )
+    else:
+        fig.update_layout(
+            title=title,
+            xaxis_title=xtitle, yaxis_title=ytitle,
+            showlegend=True
+        )
     if filename is not None:
         fig.write_html(filename)
 
     return fig
 
 # for compatability with previous versions
-plot_3d = scatter3d
+plot_3d = scatter
+scatter3d = scatter
 
-def trajectories(trajs, s=1, alpha=1, title="3D Plot", filename=None, rescale=True, fig=None, xtitle='X', ytitle='Y', ztitle='Z', scaler=None):
+# def trajectories(trajs, s=1, alpha=1, title="3D Plot", filename=None, rescale=True, fig=None, xtitle='X', ytitle='Y', ztitle='Z', scaler=None, legend_label="Trajectories"):
+def trajectories(trajs, **kwargs):
     """
     Plots trajectories in 3D space using Plotly, with thinner gray lines without markers and reduced line opacity.
 
@@ -100,48 +130,123 @@ def trajectories(trajs, s=1, alpha=1, title="3D Plot", filename=None, rescale=Tr
     Returns:
     - Plotly figure containing the trajectories plotted in 3D space.
     """
+    is_3d = trajs.shape[2] == 3
+    plot_func = go.Scatter3d if is_3d else go.Scatter
+    s = kwargs.get('s', 1)
+    s_end = kwargs.get('s_end', 1)
+    alpha = kwargs.get('alpha', 1)
+    title = kwargs.get('title', 'Plot')
+    filename = kwargs.get(None)
+    rescale = kwargs.get('rescale', True)
+    fig = kwargs.get('fig', go.Figure())
+    xtitle = kwargs.get('xtitle', 'X')
+    ytitle = kwargs.get('ytitle', 'Y')
+    ztitle = kwargs.get('ztitle', 'Z')
+    scaler = kwargs.get('scaler', None)
+    legend_label = kwargs.get('legend_label', 'Trajectories')
+
     trajs = np.asarray(trajs)
-    # Create a Plotly figure
-    if fig is None:
-        fig = go.Figure()
-    
     if rescale:
         if scaler is None:
             scaler = MinMaxScaler()
-            scaler.fit(trajs.reshape(-1, 3))
-        trajs_s = scaler.transform(trajs.reshape(-1, 3)).reshape(trajs.shape)
+            scaler.fit(trajs.reshape(-1, trajs.shape[2]))
+        trajs_s = scaler.transform(trajs.reshape(-1, trajs.shape[2])).reshape(trajs.shape)
     else:
         trajs_s = trajs
+
     # Number of trajectories
     num_trajectories = trajs.shape[1]
     
-    # Iterate over each trajectory and plot it
-    for i in range(num_trajectories):
-        # Extract the trajectory trajs
-        trajectory = trajs_s[:, i, :]
-        
-        # Add the trajectory to the plot with specified line properties
-        fig.add_trace(go.Scatter3d(
-            x=trajectory[:, 0],  # X coordinates
-            y=trajectory[:, 1],  # Y coordinates
-            z=trajectory[:, 2],  # Z coordinates
-            mode='lines',  # Only use lines (no markers)
-            line=dict(
-                width=s,  # Make the line thinner
-                color='gray',  # Set the line color to gray
-            ),
-            opacity=alpha,  # Reduce the opacity of the lines
-            showlegend=False
+    # Use a legendgroup and make the dummy trace for the legend entry
+    legendgroup = "trajectories"
+    # Add a dummy trace for the legend entry, enabling its visibility toggles the group
+    if is_3d:
+        fig.add_trace(plot_func(
+            x=[None],
+            y=[None],
+            z=[None],
+            mode='lines',
+            line=dict(color='gray', width=s),
+            name=legend_label,
+            legendgroup=legendgroup,
+            # This is the key for toggling visibility
+            visible=True
         ))
-    
+    else:
+        fig.add_trace(plot_func(
+            x=[None],
+            y=[None],
+            mode='lines',
+            line=dict(color='gray', width=s),
+            name=legend_label,
+            legendgroup=legendgroup,
+            # This is the key for toggling visibility
+            visible=True
+        ))
+    # Iterate over each trajectory and plot it, linked by legendgroup
+    for i in range(num_trajectories):
+        trajectory = trajs_s[:, i, :]
+        if is_3d:
+            fig.add_trace(plot_func(
+                x=trajectory[:, 0],
+                y=trajectory[:, 1],
+                z=trajectory[:, 2],
+                mode='lines',
+                line=dict(width=s, color='gray'),
+                opacity=alpha,
+                showlegend=False,  # Do not show these individual traces in the legend
+                legendgroup=legendgroup,  # Link visibility control to the dummy trace
+                visible=True  # Initially visible
+            ))
+        else:
+            fig.add_trace(plot_func(
+                x=trajectory[:, 0],
+                y=trajectory[:, 1],
+                mode='lines',
+                line=dict(width=s, color='gray'),
+                opacity=alpha,
+                showlegend=False,  # Do not show these individual traces in the legend
+                legendgroup=legendgroup,  # Link visibility control to the dummy trace
+                visible=True  # Initially visible
+            ))
+        # Add endpoint marker
+        if is_3d:
+            fig.add_trace(plot_func(
+                x=[trajectory[-1, 0]],
+                y=[trajectory[-1, 1]],
+                z=[trajectory[-1, 2]],
+                mode='markers',
+                marker=dict(size=s_end, color='red'), # Customize color and size as needed
+                showlegend=False,
+                legendgroup=legendgroup,
+                visible=True
+            ))
+        else:
+            fig.add_trace(plot_func(
+                x=[trajectory[-1, 0]],
+                y=[trajectory[-1, 1]],
+                mode='markers',
+                marker=dict(size=s_end, color='red'), # Customize color and size as needed
+                showlegend=False,
+                legendgroup=legendgroup,
+                visible=True
+            ))
+
     # Set the layout for the 3D plot
-    fig.update_layout(
-        title=title,
-        scene=dict(
-            xaxis_title=xtitle, yaxis_title=ytitle, zaxis_title=ztitle
-        ),
-        margin=dict(l=0, r=0, b=0, t=30)
-    )
+    if is_3d:
+        fig.update_layout(
+            title=title,
+            scene=dict(
+                xaxis_title=xtitle, yaxis_title=ytitle, zaxis_title=ztitle,
+            ),
+            margin=dict(l=0, r=0, b=0, t=30)
+        )
+    else:
+        fig.update_layout(
+            title=title,
+            xaxis_title=xtitle, yaxis_title=ytitle,
+            margin=dict(l=0, r=0, b=0, t=30)
+        )
     if filename is not None:
         fig.write_html(filename)
 

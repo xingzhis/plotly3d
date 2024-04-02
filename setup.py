@@ -2,11 +2,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="plotly3d",
-    version="0.2.0",
+    version="0.3.0",
     packages=find_packages(),
     install_requires=[
         "plotly",
-        "scikit-learn",  # Add other dependencies here
+        "scikit-learn",
+        "pandas",
+        "numpy",
     ],
     author="Xingzhi Sun",
     author_email="xingzhi.sun@yale.edu",

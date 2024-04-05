@@ -34,7 +34,9 @@ def scatter(points, colors=None, **kwargs):
     ztitle = kwargs.get('ztitle', 'Z')
     force_continuous = kwargs.get('force_continuous', False)
     rescale = kwargs.get('rescale', True)
-
+    legend = kwargs.get('legend', True)
+    colorscale = kwargs.get('colorscale', 'Viridis')
+    fig = kwargs.get('fig', go.Figure())
     points = np.asarray(points)
     colors = np.asarray(colors) if colors is not None else None
     if rescale:
@@ -44,8 +46,6 @@ def scatter(points, colors=None, **kwargs):
         points_s = scaler.transform(points)
     else:
         points_s = points
-
-    fig = kwargs.get('fig', go.Figure())
 
     if colors is None:
         colors = np.zeros(points.shape[0])
@@ -96,18 +96,19 @@ def scatter(points, colors=None, **kwargs):
                 mode='markers',
                 marker=dict(size=s, color=colors, colorscale='Viridis', opacity=alpha, colorbar=dict(title='Color Scale')),
             ))
-
+    
+    fig.data[0].marker.colorscale = colorscale
     if is_3d:
         fig.update_layout(
             title=title,
             scene=dict(xaxis_title=xtitle, yaxis_title=ytitle, zaxis_title=ztitle),
-            showlegend=True
+            showlegend=legend
         )
     else:
         fig.update_layout(
             title=title,
             xaxis_title=xtitle, yaxis_title=ytitle,
-            showlegend=True
+            showlegend=legend
         )
     if filename is not None:
         fig.write_html(filename)

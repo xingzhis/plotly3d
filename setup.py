@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="plotly3d",
-    version="0.3.1",
+    version="0.3.7",
     packages=find_packages(),
     install_requires=[
         "plotly",

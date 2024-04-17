@@ -130,3 +130,5 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+_upload_to_pypi.sh

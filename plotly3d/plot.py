@@ -44,6 +44,7 @@ def scatter(points, colors=None, **kwargs):
     colors = np.asarray(colors) if colors is not None else None
     ticks = kwargs.get('ticks', True)
     figsize = kwargs.get('figsize', None)
+    white_bkgrnd = kwargs.get('white_bkgrnd', False)
 
     if rescale:
         if scaler is None:
@@ -107,6 +108,12 @@ def scatter(points, colors=None, **kwargs):
         assert len(figsize) == 2
         fig.update_layout(width=figsize[0] * 100, height=figsize[1] * 100)  # width and height in pixels
 
+    if white_bkgrnd:
+        fig.update_layout(
+            paper_bgcolor='white',  # Color of the whole background
+            plot_bgcolor='white'        # Color of the plotting area
+        )
+
     if filename is not None:
         fig.write_html(filename)
 
@@ -143,6 +150,7 @@ def trajectories(trajs, colors=None, **kwargs):
     cmap = kwargs.get('cmap', 'tab20')
     ticks = kwargs.get('ticks', True)
     figsize = kwargs.get('figsize', None)
+    white_bkgrnd = kwargs.get('white_bkgrnd', False)
 
     if colors is None:
         colors = np.zeros(trajs.shape[1])
@@ -207,6 +215,11 @@ def trajectories(trajs, colors=None, **kwargs):
         assert len(figsize) == 2
         fig.update_layout(width=figsize[0] * 100, height=figsize[1] * 100)  # width and height in pixels
 
+    if white_bkgrnd:
+        fig.update_layout(
+            paper_bgcolor='white',  # Color of the whole background
+            plot_bgcolor='white'        # Color of the plotting area
+        )
 
     if filename is not None:
         fig.write_html(filename)

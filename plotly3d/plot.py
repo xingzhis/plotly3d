@@ -134,7 +134,7 @@ def trajectories(trajs, colors=None, **kwargs):
     - Plotly figure containing the trajectories plotted in 3D space.
     """
     is_3d = trajs.shape[2] == 3
-    plot_func = go.Scatter3d if is_3d else go.Scatter
+    plot_func = go.Scatter3d if is_3d else lambda z, **kwargs: go.Scatter(**kwargs)
     s = kwargs.get('s', 1)
     s_end = kwargs.get('s_end', 1)
     title = kwargs.get('title', 'Plot')

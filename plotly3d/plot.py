@@ -26,7 +26,7 @@ def scatter(points, colors=None, **kwargs):
         - xtitle (str), ytitle (str), ztitle (str): Titles for the X, Y, and Z axes.
     """
     is_3d = points.shape[1] == 3
-    plot_func = go.Scatter3d if is_3d else go.Scatter
+    plot_func = go.Scatter3d if is_3d else lambda z, **kwargs: go.Scatter(**kwargs)
     scaler = kwargs.get('scaler', None)
     s = kwargs.get('s', 1)
     alpha = kwargs.get('alpha', 1)
@@ -42,6 +42,9 @@ def scatter(points, colors=None, **kwargs):
     fig = kwargs.get('fig', go.Figure())
     points = np.asarray(points)
     colors = np.asarray(colors) if colors is not None else None
+    ticks = kwargs.get('ticks', True)
+    figsize = kwargs.get('figsize', None)
+
     if rescale:
         if scaler is None:
             scaler = MinMaxScaler()
@@ -65,54 +68,45 @@ def scatter(points, colors=None, **kwargs):
         # Create a trace for each unique color/category
         for i, color in enumerate(categories):
             idx = color_map == i
-            if is_3d:
-                fig.add_trace(plot_func(
-                    x=points_s[idx, 0],
-                    y=points_s[idx, 1],
-                    z=points_s[idx, 2],
-                    mode='markers',
-                    marker=dict(size=s, opacity=alpha, color=i), # Use integer mapping for color
-                    name=str(color)  # Use actual category name for legend
-                ))
-            else:
-                fig.add_trace(plot_func(
-                    x=points_s[idx, 0],
-                    y=points_s[idx, 1],
-                    mode='markers',
-                    marker=dict(size=s, opacity=alpha, color=i), # Use integer mapping for color
-                    name=str(color)  # Use actual category name for legend
-                ))
+            fig.add_trace(plot_func(
+                x=points_s[idx, 0],
+                y=points_s[idx, 1],
+                z=points_s[idx, 2] if is_3d else None,
+                mode='markers',
+                marker=dict(size=s, opacity=alpha, color=i), # Use integer mapping for color
+                name=str(color)  # Use actual category name for legend
+            ))
+
     else:
         # Step 3: Continuous Colors Plotting Strategy
-        if is_3d:
-            fig.add_trace(plot_func(
-                x=points_s[:, 0],
-                y=points_s[:, 1],
-                z=points_s[:, 2],
-                mode='markers',
-                marker=dict(size=s, color=colors, colorscale='Viridis', opacity=alpha, colorbar=dict(title='Color Scale')),
-            ))
-        else:
-            fig.add_trace(plot_func(
-                x=points_s[:, 0],
-                y=points_s[:, 1],
-                mode='markers',
-                marker=dict(size=s, color=colors, colorscale='Viridis', opacity=alpha, colorbar=dict(title='Color Scale')),
-            ))
+        fig.add_trace(plot_func(
+            x=points_s[:, 0],
+            y=points_s[:, 1],
+            z=points_s[:, 2] if is_3d else None,
+            mode='markers',
+            marker=dict(size=s, color=colors, colorscale='Viridis', opacity=alpha, colorbar=dict(title='Color Scale')),
+        ))
     
     fig.data[0].marker.colorscale = colorscale
+    scene=dict(xaxis_title=xtitle, yaxis_title=ytitle)
     if is_3d:
-        fig.update_layout(
-            title=title,
-            scene=dict(xaxis_title=xtitle, yaxis_title=ytitle, zaxis_title=ztitle),
-            showlegend=legend
-        )
-    else:
-        fig.update_layout(
-            title=title,
-            xaxis_title=xtitle, yaxis_title=ytitle,
-            showlegend=legend
-        )
+        scene['zaxis_title'] = ztitle
+    fig.update_layout(
+        title=title,
+        scene=scene,
+        showlegend=legend
+    )
+
+    if not ticks:
+        fig.update_xaxes(showgrid=False, zeroline=False, showline=False, showticklabels=False, ticks="")
+        fig.update_yaxes(showgrid=False, zeroline=False, showline=False, showticklabels=False, ticks="")
+        if is_3d:
+            fig.update_zaxes(showgrid=False, zeroline=False, showline=False, showticklabels=False, ticks="")
+
+    if figsize is not None:
+        assert len(figsize) == 2
+        fig.update_layout(width=figsize[0] * 100, height=figsize[1] * 100)  # width and height in pixels
+
     if filename is not None:
         fig.write_html(filename)
 
@@ -147,6 +141,8 @@ def trajectories(trajs, colors=None, **kwargs):
     scaler = kwargs.get('scaler', None)
     # colors = kwargs.get('colors', None)
     cmap = kwargs.get('cmap', 'tab20')
+    ticks = kwargs.get('ticks', True)
+    figsize = kwargs.get('figsize', None)
 
     if colors is None:
         colors = np.zeros(trajs.shape[1])
@@ -200,6 +196,17 @@ def trajectories(trajs, colors=None, **kwargs):
         scene=dict(xaxis_title=xtitle, yaxis_title=ytitle, zaxis_title=ztitle) if is_3d else dict(),
         margin=dict(l=0, r=0, b=0, t=30)
     )
+
+    if not ticks:
+        fig.update_xaxes(showgrid=False, zeroline=False, showline=False, showticklabels=False, ticks="")
+        fig.update_yaxes(showgrid=False, zeroline=False, showline=False, showticklabels=False, ticks="")
+        if is_3d:
+            fig.update_zaxes(showgrid=False, zeroline=False, showline=False, showticklabels=False, ticks="")
+
+    if figsize is not None:
+        assert len(figsize) == 2
+        fig.update_layout(width=figsize[0] * 100, height=figsize[1] * 100)  # width and height in pixels
+
 
     if filename is not None:
         fig.write_html(filename)

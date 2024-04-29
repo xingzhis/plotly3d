@@ -9,6 +9,7 @@ pip install plotly3d
 ```
 
 ## APIs
+
 <details><summary>
 Scatter Plots
 </summary>
@@ -31,6 +32,29 @@ def scatter(points, colors=None, **kwargs):
         - rescale (bool): If True, rescales points using the provided or default scaler.
         - fig (go.Figure): Plotly figure object to which the scatter plot will be added. If None, a new figure is created.
         - xtitle (str), ytitle (str), ztitle (str): Titles for the X, Y, and Z axes.
+
+    Returns:
+    - Plotly figure containing the scatter points plotted in 3D space.
+    """
+```
+
+</details>
+
+<details><summary>
+Trajectory Plots
+</summary>
+
+```
+def trajectories(trajs, colors=None, **kwargs):
+    """
+    Plots trajectories in 3D space using Plotly, with unique colors for each category and a single legend entry per category.
+
+    Parameters:
+    - trajs: numpy array of shape (a, b, c), where
+      a: time bins, b: trajectory index, c: space dimension (c=3 for 3D).
+
+    Returns:
+    - Plotly figure containing the trajectories plotted in 3D space.
     """
 ```
 

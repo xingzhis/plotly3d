@@ -8,9 +8,9 @@ import matplotlib.cm as cm
 
 
 def scatter(points, colors=None, **kwargs):
-    """
+    '''
     Plots 3D scatter plot with optional rescaling, coloring, and customization.
-    
+
     Parameters:
     - points: Array of points to plot.
     - colors: Optional array of colors for each point.
@@ -24,7 +24,11 @@ def scatter(points, colors=None, **kwargs):
         - rescale (bool): If True, rescales points using the provided or default scaler.
         - fig (go.Figure): Plotly figure object to which the scatter plot will be added. If None, a new figure is created.
         - xtitle (str), ytitle (str), ztitle (str): Titles for the X, Y, and Z axes.
-    """
+
+    Returns:
+    - Plotly figure containing the scatter points plotted in 3D space.
+    '''
+
     is_3d = points.shape[1] == 3
     plot_func = go.Scatter3d if is_3d else lambda z, **kwargs: go.Scatter(**kwargs)
     scaler = kwargs.get('scaler', None)
@@ -87,7 +91,7 @@ def scatter(points, colors=None, **kwargs):
             mode='markers',
             marker=dict(size=s, color=colors, colorscale='Viridis', opacity=alpha, colorbar=dict(title='Color Scale')),
         ))
-    
+
     fig.data[0].marker.colorscale = colorscale
     scene=dict(xaxis_title=xtitle, yaxis_title=ytitle)
     if is_3d:
@@ -111,7 +115,7 @@ def scatter(points, colors=None, **kwargs):
     if white_bkgrnd:
         fig.update_layout(
             paper_bgcolor='white',  # Color of the whole background
-            plot_bgcolor='white'        # Color of the plotting area
+            plot_bgcolor='white'    # Color of the plotting area
         )
 
     if filename is not None:
@@ -124,7 +128,7 @@ plot_3d = scatter
 scatter3d = scatter
 
 def trajectories(trajs, colors=None, **kwargs):
-    """
+    '''
     Plots trajectories in 3D space using Plotly, with unique colors for each category and a single legend entry per category.
 
     Parameters:
@@ -133,7 +137,8 @@ def trajectories(trajs, colors=None, **kwargs):
 
     Returns:
     - Plotly figure containing the trajectories plotted in 3D space.
-    """
+    '''
+
     is_3d = trajs.shape[2] == 3
     plot_func = go.Scatter3d if is_3d else lambda z, **kwargs: go.Scatter(**kwargs)
     s = kwargs.get('s', 1)
@@ -164,7 +169,7 @@ def trajectories(trajs, colors=None, **kwargs):
 
     color_map, categories = pd.factorize(colors, sort=True)
     cmap = cm.get_cmap(cmap, len(categories))  # Get a colormap with as many colors as categories
-    
+
     # color_map = color_map % len(color_palette)  # Ensure we use the color palette cyclically if not enough colors
 
     for i, color in enumerate(categories):
@@ -176,7 +181,7 @@ def trajectories(trajs, colors=None, **kwargs):
             trajectory = trajs_s[:, j, :]
             showlegend = (j == first_idx)  # Compare indices to determine if it's the first trajectory
             showlegend = bool(showlegend)  # Explicitly convert to Python bool
-            
+
             # Add the trace for the trajectory
             fig.add_trace(plot_func(
                 x=trajectory[:, 0],
@@ -225,3 +230,4 @@ def trajectories(trajs, colors=None, **kwargs):
         fig.write_html(filename)
 
     return fig
+

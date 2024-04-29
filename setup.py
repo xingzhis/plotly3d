@@ -5,7 +5,7 @@ with open('README.md') as f:
 
 setup(
     name="plotly3d",
-    version="0.4.7",
+    version="0.4.8",
     packages=find_packages(),
     install_requires=[
         "plotly",

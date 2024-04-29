@@ -1,5 +1,13 @@
 # plotly3d
 A helper for ploting scatter plots and trajectory plots with plotly.
+[Krishnaswamy Lab](https://krishnaswamylab.org/members), Yale University
+
+[![Latest PyPI version](https://img.shields.io/pypi/v/plotly3d.svg)](https://pypi.org/project/plotly3d/)
+[![PyPI license](https://img.shields.io/pypi/l/plotly3d.svg)](https://pypi.python.org/pypi/plotly3d/)
+[![PyPI download month](https://img.shields.io/pypi/dm/plotly3d.svg)](https://pypi.python.org/pypi/plotly3d/)
+[![PyPI download day](https://img.shields.io/pypi/dd/plotly3d.svg)](https://pypi.python.org/pypi/plotly3d/)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
+
 
 ## Install
 
